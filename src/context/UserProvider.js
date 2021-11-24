@@ -3,6 +3,13 @@ import axios from "axios"
 
 export const UserContext = React.createContext()
 
+const userAxios = axios.create()
+
+userAxios.interceptors.request.use(config => {
+  const token = localStorage.getItem("token")
+  config.headers.Authorization = `Bearer: ${token}`
+  return config
+})
 
 export default function UserProvider(props){
   const initState = { 
@@ -26,7 +33,7 @@ export default function UserProvider(props){
           token 
         }))
       })
-      .catch(err => console.log(err.response.data.errMsg))
+      .catch(err => handleAuthErr(err.response.data.errMsg))
   }
   function login(credentials){
     axios.post("/auth/login", credentials)
@@ -34,13 +41,54 @@ export default function UserProvider(props){
         const { user, token } = res.data
         localStorage.setItem("token")
         localStorage.setItem("user", JSON.stringify(user))
+        getUserTodos()
         setUserState(prevUserState => ({
           ...prevUserState,
           user,
           token 
         }))
       })
+      .catch(err => handleAuthErr(err.response.data.errMsg))
+  }
+  function logout(){
+    localStorage.removeItem("token")
+    localStorage.removeItem("user")
+    setUserState({
+      user: {},
+      token: "",
+      todos: []
+    })
+  }
+  function addTodo(newTodo){
+    userAxios.post("/api/todo", newTodo)
+      .then(res => {
+        setUserState(prevState => ({
+          ...prevState,
+          todos: [...prevState.todos, res.data]
+        }))
+      })
       .catch(err => console.log(err.response.data.errMsg))
+  }
+  function getUserTodos(){
+    userAxios.get("/api/todo/user")
+      .then(res => {
+        setUserState(prevState => ({
+          ...prevState,
+          todos: res.data
+        }))
+      })
+      .catch(err => console.log(err.response.data.errMsg))
+  }
+  function resetAuthErr(){
+    setUserState(prevState => ({
+      ...prevState,
+      errMsg: ""
+    }))
+  }
+  function handleAuthErr(){
+    setUserState(prevState => ({
+      ...prevStatehandleAuthErr
+    }))
   }
 
   return(
@@ -48,7 +96,10 @@ export default function UserProvider(props){
       value={{
         ...userState,
         signup,
-        login
+        login,
+        logout,
+        addTodo,
+        resetAuthErr
       }}>
       {props.children}
     </UserContext.Provider>

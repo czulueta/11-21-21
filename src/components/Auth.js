@@ -8,7 +8,7 @@ export default function Auth(){
   const [ inputs, setInputs ] = useState(initInputs)
   const [ toggle, setToggle ] = useState(false)
 
-  const {} = useContext(UserContext)
+  const { signup, login, errMsg, resetAuthErr } = useContext(UserContext)
 
   function handleChange(e){
     const { name, value } = e.target
@@ -19,15 +19,15 @@ export default function Auth(){
   }
   function handleSignup(e){
     e.preventDefault()
-    //signup function from context
+    signup(inputs)
   }
   function handleLogin(e){
     e.preventDefault()
-    //login function from context
+    login(inputs)
   }
   function toggleForm(){
     setToggle(prev => !prev)
-    //resetAuthErr function from context
+    resetAuthErr()
   }
 
   return(
@@ -35,22 +35,22 @@ export default function Auth(){
       {!toggle ?
         <>
           <AuthForm
-            handleChange={}
-            handleSubmit={}
-            inputs={}
-            btnText=""
-            errMsg={} />
-          <p onClick={}>Already a member?</p>
+            handleChange={handleChange}
+            handleSubmit={handleSignup}
+            inputs={inputs}
+            btnText="Signup"
+            errMsg={errMsg} />
+          <p onClick={toggleForm}>Already a member?</p>
         </>
         :
         <>
           <AuthForm
-            handleChange={}
-            handleSubmit={}
-            inputs={}
-            btnText=""
-            errMsg={} />
-          <p onClick={}>Not a member?</p>
+            handleChange={handleChange}
+            handleSubmit={handleLogin}
+            inputs={inputs}
+            btnText="Login"
+            errMsg={errMsg} />
+          <p onClick={toggleForm}>Not a member?</p>
         </>
       }
     </div>
